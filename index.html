@@ -1,597 +1,998 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="description" content="A Little Love Story — sebuah buku cinta interaktif yang penuh animasi dan plot twist imut." />
-  <meta name="theme-color" content="#FFD6E7" />
-  <title>A Little Love Story 💕</title>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>A Little Love Story</title>
+  <meta name="theme-color" content="#FFD6E7">
 
   <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Nunito:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
+    rel="stylesheet">
 
-  <!-- Stylesheet -->
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ===== VARIABLES & BASE ===== */
+    :root {
+      --pink-muda: #FFD6E7;
+      --peach: #FFE3D8;
+      --cream: #FFF8E8;
+      --lavender: #E9D8FF;
+      --baby-blue: #D8EEFF;
+      --white: #FFFFFF;
+      --text-main: #5B4B5A;
+      --text-sec: #8A7485;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body,
+    html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: linear-gradient(180deg, var(--cream) 0%, var(--pink-muda) 100%);
+      font-family: 'Nunito', sans-serif;
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    h1,
+    h2,
+    .script-font {
+      font-family: 'Dancing Script', cursive;
+    }
+
+    /* ===== BACKGROUND PETALS ===== */
+    .petals-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .petal {
+      position: absolute;
+      top: -10%;
+      background: rgba(255, 255, 255, 0.6);
+      border-radius: 50% 0 50% 50%;
+      animation: fall linear infinite;
+    }
+
+    /* ===== UI ELEMENTS ===== */
+    .ui-controls {
+      position: absolute;
+      top: max(20px, var(--safe-top));
+      right: 20px;
+      z-index: 100;
+      display: flex;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+
+    .ui-controls.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      border: 2px solid var(--white);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+    }
+
+    .page-indicator {
+      position: absolute;
+      bottom: max(20px, var(--safe-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.7);
+      padding: 5px 15px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 14px;
+      z-index: 100;
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+
+    /* ===== OPENING SCENE ===== */
+    .opening-scene {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(43, 45, 66, 0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+      color: var(--white);
+      transition: opacity 1s, visibility 1s;
+    }
+
+    .opening-scene h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+      animation: float 3s ease-in-out infinite;
+    }
+
+    .opening-scene p {
+      font-size: 18px;
+      opacity: 0.8;
+      animation: pulse 2s infinite;
+    }
+
+    .book-icon {
+      font-size: 60px;
+      margin-bottom: 30px;
+      animation: dropBounce 1.5s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+      transform: translateY(-200px);
+      opacity: 0;
+    }
+
+    /* ===== BOOK COMPONENTS & 3D ===== */
+    .scene {
+      width: 100%;
+      max-width: 390px;
+      /* iPhone size preview for desktop */
+      height: 100%;
+      max-height: 844px;
+      perspective: 2500px;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .book {
+      width: 90%;
+      height: 85%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1);
+      border-radius: 10px 20px 20px 10px;
+      box-shadow: 10px 15px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .book.closed {
+      transform: rotateY(0deg) scale(0.95);
+    }
+
+    .book.open {
+      transform: translateX(0) scale(1);
+    }
+
+    .page {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background: var(--white);
+      border-radius: 10px 20px 20px 10px;
+      transform-origin: left center;
+      transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1), opacity 0.3s;
+      backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      text-align: center;
+      box-shadow: inset 5px 0 10px rgba(0, 0, 0, 0.05);
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.03"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="2" fill="%235B4B5A"/></svg>');
+      /* Tekstur kertas halus */
+      will-change: transform;
+    }
+
+    /* Cover styling */
+    .cover {
+      background: linear-gradient(135deg, var(--lavender), var(--pink-muda));
+      border-left: 15px solid rgba(0, 0, 0, 0.1);
+      /* Spine */
+      color: var(--text-main);
+      border-radius: 15px 25px 25px 15px;
+    }
+
+    .cover h1 {
+      font-size: 50px;
+      color: var(--white);
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .page.flipped {
+      transform: rotateY(-180deg);
+      pointer-events: none;
+    }
+
+    /* Z-Index logic untuk 15 Halaman + Cover */
+    .page:nth-child(1) {
+      z-index: 17;
+    }
+
+    /* Cover */
+    .page:nth-child(2) {
+      z-index: 16;
+    }
+
+    /* Hal 1 */
+    .page:nth-child(3) {
+      z-index: 15;
+    }
+
+    .page:nth-child(4) {
+      z-index: 14;
+    }
+
+    .page:nth-child(5) {
+      z-index: 13;
+    }
+
+    .page:nth-child(6) {
+      z-index: 12;
+    }
+
+    .page:nth-child(7) {
+      z-index: 11;
+    }
+
+    .page:nth-child(8) {
+      z-index: 10;
+    }
+
+    .page:nth-child(9) {
+      z-index: 9;
+    }
+
+    .page:nth-child(10) {
+      z-index: 8;
+    }
+
+    .page:nth-child(11) {
+      z-index: 7;
+    }
+
+    .page:nth-child(12) {
+      z-index: 6;
+    }
+
+    .page:nth-child(13) {
+      z-index: 5;
+    }
+
+    .page:nth-child(14) {
+      z-index: 4;
+    }
+
+    .page:nth-child(15) {
+      z-index: 3;
+    }
+
+    .page:nth-child(16) {
+      z-index: 2;
+    }
+
+    /* Hal 15 */
+    .page:nth-child(17) {
+      z-index: 1;
+    }
+
+    /* Back Cover */
+
+    /* ===== SPECIFIC PAGE STYLES ===== */
+    .typewriter {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid var(--text-main);
+      animation: typing 2s steps(40, end), blink-caret .75s step-end infinite;
+    }
+
+    .emoji-large {
+      font-size: 80px;
+    }
+
+    .night-sky {
+      background: linear-gradient(180deg, #1A1A2E 0%, #16213E 100%);
+      color: var(--white);
+    }
+
+    .interactive-btn {
+      background: var(--peach);
+      border: none;
+      padding: 15px 30px;
+      font-family: 'Nunito';
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text-main);
+      border-radius: 30px;
+      margin-top: 20px;
+      box-shadow: 0 5px 15px rgba(255, 163, 163, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .interactive-btn:active {
+      transform: scale(0.95);
+    }
+
+    .polaroid {
+      background: var(--white);
+      padding: 10px 10px 40px 10px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+      transform: rotate(-5deg);
+      animation: dropDown 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    }
+
+    .polaroid img {
+      width: 200px;
+      height: 200px;
+      background: #eee;
+      object-fit: cover;
+    }
+
+    .envelope-container {
+      cursor: pointer;
+      animation: float 3s infinite ease-in-out;
+    }
+
+    .heart-bg {
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><text y="20" font-size="20">💖</text></svg>');
+      animation: slideBg 10s linear infinite;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-15px);
+      }
+    }
+
+    @keyframes dropBounce {
+      0% {
+        transform: translateY(-200px);
+        opacity: 0;
+      }
+
+      60% {
+        transform: translateY(20px);
+        opacity: 1;
+      }
+
+      80% {
+        transform: translateY(-10px);
+      }
+
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 0.8;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    @keyframes beat {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      25% {
+        transform: scale(1.2);
+      }
+
+      50% {
+        transform: scale(1);
+      }
+
+      75% {
+        transform: scale(1.2);
+      }
+    }
+
+    @keyframes wiggle {
+
+      0%,
+      100% {
+        transform: rotate(-5deg);
+      }
+
+      50% {
+        transform: rotate(5deg);
+      }
+    }
+
+    @keyframes twinkle {
+
+      0%,
+      100% {
+        opacity: 0.2;
+        transform: scale(0.8);
+      }
+
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(360deg);
+      }
+    }
+
+    @keyframes typing {
+      from {
+        width: 0
+      }
+
+      to {
+        width: 100%
+      }
+    }
+
+    @keyframes blink-caret {
+
+      from,
+      to {
+        border-color: transparent
+      }
+
+      50% {
+        border-color: var(--text-main);
+      }
+    }
+
+    @keyframes dropDown {
+      from {
+        transform: translateY(-100vh) rotate(-20deg);
+      }
+
+      to {
+        transform: translateY(0) rotate(-5deg);
+      }
+    }
+
+    @keyframes popOut {
+      0% {
+        transform: scale(0);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+
+    @keyframes slideBg {
+      from {
+        background-position: 0 0;
+      }
+
+      to {
+        background-position: 100px 100px;
+      }
+    }
+
+    /* ===== PARTICLE SYSTEM ===== */
+    .particle {
+      position: absolute;
+      pointer-events: none;
+      z-index: 999;
+      font-size: 24px;
+      animation: particleFloat 1s ease-out forwards;
+    }
+
+    @keyframes particleFloat {
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(var(--tx), var(--ty)) scale(0.5);
+        opacity: 0;
+      }
+    }
+
+    /* ===== ENDING CINEMATIC ===== */
+    .ending-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255, 255, 255, 0.9);
+      z-index: 300;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 1s;
+    }
+
+    .ending-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .ending-overlay h2 {
+      font-size: 40px;
+      color: #ff477e;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+  </style>
 </head>
+
 <body>
 
-  <!-- ===== PARTICLE CONTAINER ===== -->
-  <div id="particle-container" aria-hidden="true"></div>
+  <!-- ===== AUDIO ELEMENTS ===== -->
+  <!-- Catatan: Ganti src dengan file mp3 Anda yang diupload di folder assets/audio/ jika digunakan secara lokal/repo -->
+  <audio id="bgm" loop>
+    <source src="data:audio/mp3;base64," type="audio/mpeg">
+  </audio>
+  <audio id="sfx-open">
+    <source src="data:audio/mp3;base64," type="audio/mpeg">
+  </audio>
+  <audio id="sfx-flip">
+    <source src="data:audio/mp3;base64," type="audio/mpeg">
+  </audio>
+  <audio id="sfx-pop">
+    <source src="data:audio/mp3;base64," type="audio/mpeg">
+  </audio>
 
-  <!-- ===== FALLING PETALS CONTAINER ===== -->
-  <div id="petals-container" aria-hidden="true"></div>
+  <!-- ===== BACKGROUND EFFECT ===== -->
+  <div class="petals-container" id="petals"></div>
+
+  <!-- ===== UI CONTROLS ===== -->
+  <div class="ui-controls" id="ui-controls">
+    <button class="icon-btn" id="mute-btn" aria-label="Mute Audio">🎵</button>
+  </div>
+  <div class="page-indicator" id="page-indicator">Cover</div>
 
   <!-- ===== OPENING SCENE ===== -->
-  <div id="opening-scene" class="opening-scene" aria-label="Layar pembuka">
+  <div class="opening-scene" id="opening" onclick="startStory()">
+    <div class="book-icon">📖</div>
+    <h1 class="script-font">A Little Love Story</h1>
+    <p>✨ Tap di mana saja untuk membuka ✨</p>
+  </div>
 
-    <!-- Stars background -->
-    <div id="stars-container" class="stars-container" aria-hidden="true"></div>
+  <!-- ===== 3D SCENE & BOOK ===== -->
+  <div class="scene">
+    <div class="book closed" id="book">
 
-    <!-- Main opening content -->
-    <div class="opening-content">
-      <!-- Book icon falling from above -->
-      <div id="book-icon-drop" class="book-icon-drop" aria-hidden="true">
-        <div class="book-icon-visual">
-          <span class="book-emoji">📖</span>
+      <!-- Cover -->
+      <div class="page cover" id="page-0">
+        <div style="font-size: 60px; animation: float 3s infinite;">🌸</div>
+        <h1>Our Story</h1>
+        <p style="margin-top:20px; font-weight:bold;">Tap sebelah kanan buku untuk membuka</p>
+        <!-- Stiker kecil sudut -->
+        <div style="position:absolute; bottom:10px; right:10px; font-size:24px;">✨</div>
+      </div>
+
+      <!-- Halaman 1 -->
+      <div class="page" id="page-1">
+        <h2 class="script-font typewriter" style="font-size: 40px;">Hai...</h2>
+        <p style="margin-top: 20px;">Iya, ini buat kamu.</p>
+      </div>
+
+      <!-- Halaman 2 -->
+      <div class="page" id="page-2">
+        <div class="emoji-large" style="animation: wiggle 2s infinite;">👧🏻</div>
+        <div style="font-size: 40px; position:absolute; top:20%; left:10%; animation: float 4s infinite;">☁️
+        </div>
+        <div style="font-size: 40px; position:absolute; top:30%; right:10%; animation: float 3s infinite;">☁️
+        </div>
+        <h2 class="script-font" style="margin-top: 20px; font-size: 32px;">Kamu tau gak?</h2>
+      </div>
+
+      <!-- Halaman 3 -->
+      <div class="page" id="page-3">
+        <div class="emoji-large" style="animation: float 2s infinite;">💭</div>
+        <h2 class="script-font" style="margin-top: 20px; font-size: 30px;">Tiap kali mikirin kamu...</h2>
+      </div>
+
+      <!-- Halaman 4 (Plot twist) -->
+      <div class="page" id="page-4">
+        <div class="emoji-large" style="animation: beat 1s infinite;">😳</div>
+        <h2 class="script-font" style="margin-top: 20px; font-size: 32px;">Sebenarnya aku gugup banget</h2>
+        <p>Mau ngomong ini dari lama...</p>
+      </div>
+
+      <!-- Halaman 5 (Mini interaction) -->
+      <div class="page" id="page-5">
+        <h2 class="script-font" style="font-size: 28px; margin-bottom:30px;">Coba tap hatinya deh!</h2>
+        <div class="emoji-large" style="animation: beat 1.5s infinite; cursor: pointer; padding: 20px;"
+          onclick="triggerHeartBurst(event)">💖</div>
+      </div>
+
+      <!-- Halaman 6 (Amplop) -->
+      <div class="page" id="page-6">
+        <div class="envelope-container" onclick="openEnvelope(this)">
+          <div style="font-size: 100px;">💌</div>
+          <p style="margin-top: 10px; font-weight: bold;">Tap amplopnya</p>
+        </div>
+        <div class="letter"
+          style="display:none; background:#fff; border: 1px solid #ccc; padding:20px; border-radius:10px; box-shadow: 0 5px 10px rgba(0,0,0,0.1);">
+          <p class="script-font" style="font-size: 24px;">"Kamu itu hal terbaik yang pernah terjadi."</p>
         </div>
       </div>
 
-      <!-- Title with handwriting animation -->
-      <h1 id="opening-title" class="opening-title" aria-label="A Little Love Story">
-        <span class="title-text">A Little Love Story</span>
-      </h1>
-
-      <!-- Tap prompt -->
-      <div id="tap-prompt" class="tap-prompt">
-        <div class="heart-icon-beat" aria-hidden="true">💖</div>
-        <p class="tap-text">Tap untuk membuka buku</p>
+      <!-- Halaman 7 (Malam) -->
+      <div class="page night-sky" id="page-7">
+        <div style="font-size: 80px; animation: float 4s infinite;">🌙</div>
+        <div style="position:absolute; top:20px; left:30px; font-size:20px; animation: twinkle 1s infinite;">✨
+        </div>
+        <div style="position:absolute; top:60px; right:40px; font-size:15px; animation: twinkle 1.5s infinite;">
+          ✨</div>
+        <h2 class="script-font" style="margin-top: 30px; font-size: 35px;">Bahkan di malam hari...</h2>
       </div>
+
+      <!-- Halaman 8 -->
+      <div class="page" id="page-8">
+        <div class="emoji-large" style="animation: wiggle 2s infinite;">🙈</div>
+        <h2 class="script-font" style="margin-top: 20px; font-size: 30px;">Kamu yang selalu bikin senyum-senyum
+          sendiri</h2>
+      </div>
+
+      <!-- Halaman 9 (Polaroid) -->
+      <div class="page" id="page-9">
+        <div class="polaroid">
+          <div
+            style="width: 200px; height: 200px; background: var(--peach); display:flex; justify-content:center; align-items:center; font-size: 80px;">
+            🌸</div>
+          <p class="script-font" style="margin-top: 15px; font-size: 24px;">Our memories...</p>
+        </div>
+      </div>
+
+      <!-- Halaman 10 (Puzzle) -->
+      <div class="page" id="page-10">
+        <h2 class="script-font" style="font-size: 28px; margin-bottom:20px;">Aku punya hadiah! Tap kotaknya</h2>
+        <div style="font-size: 100px; cursor: pointer; animation: float 2s infinite;"
+          onclick="triggerConfetti(event, this)">🎁</div>
+      </div>
+
+      <!-- Halaman 11 (Konfeti hasil klik hadiah) -->
+      <div class="page" id="page-11">
+        <div class="emoji-large" style="animation: bounce 1s infinite;">🎉</div>
+        <h2 class="script-font" style="margin-top: 20px; font-size: 35px;">Kejutan!!</h2>
+      </div>
+
+      <!-- Halaman 12 (Countdown) -->
+      <div class="page" id="page-12">
+        <h2 class="script-font" style="font-size: 30px;">Jadi, intinya adalah...</h2>
+        <div id="countdown" style="font-size: 60px; font-weight: 800; margin-top:20px; color:#ff477e;">3</div>
+      </div>
+
+      <!-- Halaman 13 (Layar Hati) -->
+      <div class="page heart-bg" id="page-13">
+        <div style="background: rgba(255,255,255,0.8); padding: 30px; border-radius: 20px;">
+          <h2 class="script-font" style="font-size: 40px; color:#ff477e;">Aku Sayang Kamu!</h2>
+        </div>
+      </div>
+
+      <!-- Halaman 14 -->
+      <div class="page" id="page-14">
+        <div class="emoji-large" style="animation: beat 1s infinite;">👩‍❤️‍👨</div>
+        <h2 class="script-font" style="margin-top: 20px; font-size: 30px;">Semoga kita bisa bikin lebih banyak
+          cerita bareng ya!</h2>
+      </div>
+
+      <!-- Halaman 15 (Ending) -->
+      <div class="page" id="page-15">
+        <h2 class="script-font" style="font-size: 35px;">Terima kasih sudah membaca cerita ini.</h2>
+        <p style="margin-top:20px;">Tutup bukunya ya...</p>
+      </div>
+
+      <!-- Back Cover -->
+      <div class="page cover" id="page-16">
+        <h1 style="font-size:40px;">The End</h1>
+        <p style="color:var(--white); margin-top:10px;">Made with ❤️</p>
+      </div>
+
     </div>
   </div>
 
-  <!-- ===== MAIN BOOK APP ===== -->
-  <div id="app" class="app hidden" role="main">
+  <!-- ===== ENDING OVERLAY ===== -->
+  <div class="ending-overlay" id="outro">
+    <h2 class="script-font">Sampai jumpa di cerita berikutnya ❤️</h2>
+    <button class="interactive-btn" onclick="location.reload()">Baca Lagi 📖</button>
+    <button class="interactive-btn" style="background: var(--baby-blue); margin-top: 15px;"
+      onclick="shareStory()">Bagikan Cerita ✨</button>
+  </div>
 
-    <!-- Page indicator -->
-    <div id="page-indicator" class="page-indicator" aria-live="polite" aria-label="Halaman saat ini">
-      <span id="current-page-num">1</span> / <span id="total-pages-num">15</span>
-    </div>
+  <!-- ===== JAVASCRIPT ===== -->
+  <script>
+    /* ===== SETUP & VARIABLES ===== */
+    const book = document.getElementById('book');
+    const pages = document.querySelectorAll('.page');
+    const totalPages = pages.length;
+    let currentPage = 0; // 0 is cover
 
-    <!-- Audio control button -->
-    <button id="mute-btn" class="mute-btn" aria-label="Matikan suara">
-      <span id="mute-icon" class="mute-icon">🔊</span>
-    </button>
+    const uiControls = document.getElementById('ui-controls');
+    const pageIndicator = document.getElementById('page-indicator');
+    const muteBtn = document.getElementById('mute-btn');
+    const bgm = document.getElementById('bgm');
 
-    <!-- Bookmark ribbon -->
-    <div class="bookmark-ribbon" aria-hidden="true"></div>
+    let isMuted = false;
+    let audioInitialized = false;
 
-    <!-- ===== THE BOOK ===== -->
-    <div id="book-wrapper" class="book-wrapper">
-      <div id="book" class="book" role="region" aria-label="Buku cerita cinta">
+    /* ===== BOOK OPENING ===== */
+    function startStory() {
+      document.getElementById('opening').style.opacity = '0';
+      setTimeout(() => {
+        document.getElementById('opening').style.visibility = 'hidden';
+        book.classList.remove('closed');
+        book.classList.add('open');
+        uiControls.classList.add('active');
+        pageIndicator.classList.add('active');
 
-        <!-- Book spine -->
-        <div class="book-spine" aria-hidden="true">
-          <span class="spine-text">A Little Love Story</span>
-        </div>
+        // Initialize Audio context (Requires user gesture)
+        if (!audioInitialized) {
+          bgm.volume = 0.25;
+          bgm.play().catch(e => console.log("Audio play prevented by browser"));
+          audioInitialized = true;
+        }
 
-        <!-- ===== FRONT COVER ===== -->
-        <div id="front-cover" class="book-cover front-cover" role="button" tabindex="0" aria-label="Buka buku">
-          <div class="cover-front-face">
-            <!-- Cover decorations -->
-            <div class="cover-corner cover-corner--tl" aria-hidden="true">🌸</div>
-            <div class="cover-corner cover-corner--tr" aria-hidden="true">✨</div>
-            <div class="cover-corner cover-corner--bl" aria-hidden="true">🌷</div>
-            <div class="cover-corner cover-corner--br" aria-hidden="true">💫</div>
+        generatePetals();
+        createParticles(window.innerWidth / 2, window.innerHeight / 2, ['✨', '💖']);
+        playSound('sfx-open');
+      }, 500);
+    }
 
-            <!-- Cover title -->
-            <div class="cover-content">
-              <div class="cover-heart-cluster" aria-hidden="true">
-                <span class="cover-heart big-heart">💖</span>
-                <span class="cover-heart small-heart left-heart">💕</span>
-                <span class="cover-heart small-heart right-heart">💝</span>
-              </div>
-              <h2 class="cover-title">A Little<br/>Love Story</h2>
-              <div class="cover-divider" aria-hidden="true"></div>
-              <p class="cover-subtitle">~ Untukmu, yang istimewa ~</p>
-              <div class="cover-flowers" aria-hidden="true">🌸🌺🌸</div>
-            </div>
+    /* ===== PAGE FLIP LOGIC ===== */
+    function updatePageVisibility() {
+      if (currentPage === 0) {
+        pageIndicator.innerText = "Cover";
+      } else if (currentPage === totalPages - 1) {
+        pageIndicator.innerText = "Back Cover";
+      } else {
+        pageIndicator.innerText = `${currentPage} / 15`;
+      }
 
-            <!-- Texture overlay -->
-            <div class="cover-texture" aria-hidden="true"></div>
-          </div>
+      // Animasi Khusus Halaman
+      if (currentPage === 12) startCountdown();
+      if (currentPage === totalPages - 1) setTimeout(triggerCinematicEnding, 1500);
+    }
 
-          <!-- Back face of front cover -->
-          <div class="cover-back-face" aria-hidden="true">
-            <div class="cover-back-pattern"></div>
-          </div>
-        </div>
+    function nextPage() {
+      if (currentPage < totalPages - 1) {
+        pages[currentPage].classList.add('flipped');
+        currentPage++;
+        playSound('sfx-flip');
+        updatePageVisibility();
+      }
+    }
 
-        <!-- ===== PAGES CONTAINER ===== -->
-        <div id="pages-container" class="pages-container" aria-live="polite">
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        pages[currentPage].classList.remove('flipped');
+        playSound('sfx-flip');
+        updatePageVisibility();
+      }
+    }
 
-          <!-- PAGE 1: Hai... -->
-          <div class="page" data-page="1" role="article" aria-label="Halaman 1">
-            <div class="page-corner-sticker sticker-tl" aria-hidden="true">🌸</div>
-            <div class="page-number" aria-hidden="true">1</div>
-            <div class="page-content page-1-content">
-              <div class="typewriter-container">
-                <h2 class="page-heading typewriter-text" id="page1-text" data-text="Hai...">Hai...</h2>
-              </div>
-              <div class="page1-clouds" aria-hidden="true">
-                <div class="cloud cloud-1">☁️</div>
-                <div class="cloud cloud-2">☁️</div>
-                <div class="cloud cloud-3">🌤️</div>
-              </div>
-              <p class="page-body delay-1">Ini adalah sebuah cerita...</p>
-              <p class="page-body delay-2">cerita yang lahir dari hati kecil yang penuh rasa.</p>
-              <div class="floating-hearts-row delay-3" aria-hidden="true">
-                <span class="float-heart fh-1">💗</span>
-                <span class="float-heart fh-2">💓</span>
-                <span class="float-heart fh-3">💗</span>
-              </div>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+    /* ===== TOUCH & GESTURES (SWIPE/TAP) ===== */
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const threshold = 50;
 
-          <!-- PAGE 2: Karakter Chibi -->
-          <div class="page hidden-page" data-page="2" role="article" aria-label="Halaman 2">
-            <div class="page-corner-sticker sticker-tr" aria-hidden="true">✨</div>
-            <div class="page-number" aria-hidden="true">2</div>
-            <div class="page-content page-2-content">
-              <div class="chibi-scene" aria-label="Karakter chibi imut di bawah awan">
-                <div class="sky-bg">
-                  <div class="moving-cloud cloud-a" aria-hidden="true">☁️</div>
-                  <div class="moving-cloud cloud-b" aria-hidden="true">⛅</div>
-                  <div class="moving-cloud cloud-c" aria-hidden="true">☁️</div>
-                </div>
-                <div class="chibi-character" aria-label="Karakter chibi">
-                  <div class="chibi-body wiggle">
-                    <div class="chibi-head">
-                      <div class="chibi-face">
-                        <div class="chibi-eyes">
-                          <span class="chibi-eye left-eye blink-eye">●</span>
-                          <span class="chibi-eye right-eye blink-eye">●</span>
-                        </div>
-                        <div class="chibi-blush"></div>
-                        <div class="chibi-mouth">ᵕ</div>
-                      </div>
-                      <div class="chibi-hair"></div>
-                    </div>
-                    <div class="chibi-torso">
-                      <div class="chibi-dress"></div>
-                    </div>
-                    <div class="chibi-legs">
-                      <div class="chibi-leg"></div>
-                      <div class="chibi-leg"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="ground-flowers" aria-hidden="true">🌸🌷🌸🌺🌸</div>
-              </div>
-              <p class="page-body center-text delay-1">Di suatu hari yang tenang dan hangat...</p>
-              <p class="page-body center-text delay-2">ada seseorang yang membawa cahaya.</p>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+    document.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
 
-          <!-- PAGE 3: Tahukah kamu? -->
-          <div class="page hidden-page" data-page="3" role="article" aria-label="Halaman 3">
-            <div class="page-corner-sticker sticker-tl" aria-hidden="true">💫</div>
-            <div class="page-number" aria-hidden="true">3</div>
-            <div class="page-content page-3-content">
-              <h2 class="page-heading center-text">Tahukah kamu?</h2>
-              <div class="floating-heart-field" aria-hidden="true">
-                <span class="field-heart fheart-1">💗</span>
-                <span class="field-heart fheart-2">💓</span>
-                <span class="field-heart fheart-3">💕</span>
-                <span class="field-heart fheart-4">💖</span>
-                <span class="field-heart fheart-5">💗</span>
-                <span class="field-heart fheart-6">💝</span>
-              </div>
-              <p class="page-body center-text delay-1">Setiap kali namamu disebut...</p>
-              <p class="page-body center-text delay-2">ada kupu-kupu yang mengepak riang di dalam dada.</p>
-              <div class="butterfly-row delay-3" aria-hidden="true">
-                <span class="butterfly bf-1">🦋</span>
-                <span class="butterfly bf-2">🦋</span>
-                <span class="butterfly bf-3">🦋</span>
-              </div>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+    document.addEventListener('touchend', e => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleGesture();
+    }, { passive: true });
 
-          <!-- PAGE 4: Plot Twist – Gugup -->
-          <div class="page hidden-page" data-page="4" role="article" aria-label="Halaman 4">
-            <div class="page-corner-sticker sticker-tr" aria-hidden="true">💌</div>
-            <div class="page-number" aria-hidden="true">4</div>
-            <div class="page-content page-4-content">
-              <div class="plot-twist-banner" aria-label="Plot twist">
-                <span class="plot-twist-label">✨ Plot Twist ✨</span>
-              </div>
-              <div class="reveal-text-box">
-                <p class="reveal-line delay-1">"Sebenarnya aku gugup sejak awal..."</p>
-                <p class="reveal-line delay-2">Setiap kali bertemu, jantungku berlomba-lomba.</p>
-                <p class="reveal-line delay-3">Senyummu membuatku lupa kata-kata. 😳</p>
-              </div>
-              <div class="sweat-drop-container delay-3" aria-hidden="true">
-                <div class="chibi-nervous wiggle">
-                  <div class="chibi-head nervous-face">
-                    <div class="chibi-face">
-                      <div class="chibi-eyes">
-                        <span class="chibi-eye">＞</span>
-                        <span class="chibi-eye">＜</span>
-                      </div>
-                      <div class="chibi-blush active-blush"></div>
-                      <div class="chibi-mouth">~</div>
-                    </div>
-                  </div>
-                  <div class="sweat-drop">💧</div>
-                </div>
-              </div>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+    function handleGesture() {
+      if (touchEndX < touchStartX - threshold) {
+        // Swipe Left -> Next
+        nextPage();
+      }
+      if (touchEndX > touchStartX + threshold) {
+        // Swipe Right -> Prev
+        prevPage();
+      }
+    }
 
-          <!-- PAGE 5: Mini Interaksi – Ketuk Hati -->
-          <div class="page hidden-page" data-page="5" role="article" aria-label="Halaman 5">
-            <div class="page-corner-sticker sticker-tl" aria-hidden="true">🌷</div>
-            <div class="page-number" aria-hidden="true">5</div>
-            <div class="page-content page-5-content">
-              <h2 class="page-heading center-text">Sentuh hatiku... 💓</h2>
-              <p class="page-body center-text delay-1">Ketuk hati ini untuk melanjutkan!</p>
-              <div class="interactive-heart-zone" aria-label="Zona interaksi">
-                <button
-                  id="interactive-heart"
-                  class="interactive-heart bounce"
-                  aria-label="Ketuk hati untuk melanjutkan"
-                >
-                  💖
-                </button>
-                <div id="heart-tap-count" class="heart-tap-count" aria-live="polite">0 / 5</div>
-                <p id="heart-prompt" class="heart-prompt delay-2">Ketuk 5 kali untuk membuka kunci! 🔓</p>
-              </div>
-              <div id="page5-unlock-msg" class="unlock-message hidden" aria-live="assertive">
-                🎉 Kamu membuka kuncinya! 🎉
-              </div>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+    // Tap on screen edges
+    document.addEventListener('click', (e) => {
+      // Ignore if clicking buttons/interactive elements
+      if (e.target.closest('button') || e.target.closest('.opening-scene') || e.target.closest('.interactive-btn') || e.target.closest('.envelope-container') || e.target.hasAttribute('onclick')) return;
 
-          <!-- PAGE 6: Amplop & Surat -->
-          <div class="page hidden-page" data-page="6" role="article" aria-label="Halaman 6">
-            <div class="page-corner-sticker sticker-tr" aria-hidden="true">💌</div>
-            <div class="page-number" aria-hidden="true">6</div>
-            <div class="page-content page-6-content">
-              <h2 class="page-heading center-text delay-1">Ada surat untukmu... 📬</h2>
-              <div class="envelope-scene">
-                <div id="envelope" class="envelope" role="button" tabindex="0" aria-label="Buka amplop" aria-expanded="false">
-                  <div class="envelope-body">
-                    <div class="envelope-flap" id="envelope-flap"></div>
-                    <div class="envelope-front">
-                      <div class="envelope-seal">💗</div>
-                    </div>
-                  </div>
-                </div>
-                <div id="letter" class="letter hidden-letter" aria-label="Isi surat">
-                  <div class="letter-content">
-                    <p class="letter-line">Kamu,</p>
-                    <p class="letter-line">Aku ingin bilang bahwa kehadiranmu</p>
-                    <p class="letter-line">membuat hari-hariku berwarna.</p>
-                    <p class="letter-line">Terima kasih sudah ada. 🌸</p>
-                    <p class="letter-signature">— Seseorang yang menyayangimu</p>
-                  </div>
-                </div>
-              </div>
-              <p id="envelope-prompt" class="page-body center-text delay-2">Tap amplop untuk membukanya!</p>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+      const screenWidth = window.innerWidth;
+      if (e.clientX > screenWidth / 2 + 50) {
+        nextPage();
+      } else if (e.clientX < screenWidth / 2 - 50) {
+        prevPage();
+      }
+    });
 
-          <!-- PAGE 7: Malam Berbintang -->
-          <div class="page hidden-page night-page" data-page="7" role="article" aria-label="Halaman 7">
-            <div class="page-corner-sticker sticker-tl night-sticker" aria-hidden="true">⭐</div>
-            <div class="page-number night-number" aria-hidden="true">7</div>
-            <div class="page-content page-7-content">
-              <div class="night-sky" aria-hidden="true">
-                <div class="night-star ns-1 twinkle">⭐</div>
-                <div class="night-star ns-2 twinkle">✨</div>
-                <div class="night-star ns-3 twinkle">⭐</div>
-                <div class="night-star ns-4 twinkle">💫</div>
-                <div class="night-star ns-5 twinkle">⭐</div>
-                <div class="night-star ns-6 twinkle">✨</div>
-                <div class="night-moon">🌙</div>
-              </div>
-              <div class="night-text-content">
-                <h2 class="page-heading night-heading center-text delay-1">Di bawah bintang...</h2>
-                <p class="page-body night-body center-text delay-2">Kupandangi langit malam yang indah,</p>
-                <p class="page-body night-body center-text delay-3">dan aku berharap kamu ada di sini bersamaku.</p>
-                <div class="wish-bubble delay-4" aria-hidden="true">
-                  <span class="wish-text">🌟 Kukirimkan bintang terbaik untukmu 🌟</span>
-                </div>
-              </div>
-            </div>
-          </div>
+    /* ===== AUDIO CONTROL ===== */
+    muteBtn.addEventListener('click', () => {
+      isMuted = !isMuted;
+      bgm.muted = isMuted;
+      muteBtn.innerText = isMuted ? '🔇' : '🎵';
+    });
 
-          <!-- PAGE 8: Karakter Malu -->
-          <div class="page hidden-page" data-page="8" role="article" aria-label="Halaman 8">
-            <div class="page-corner-sticker sticker-tr" aria-hidden="true">🌺</div>
-            <div class="page-number" aria-hidden="true">8</div>
-            <div class="page-content page-8-content">
-              <h2 class="page-heading center-text delay-1">Um... aku mau bilang sesuatu... 😳</h2>
-              <div class="shy-character-scene">
-                <div class="shy-chibi wiggle">
-                  <div class="chibi-head">
-                    <div class="chibi-face shy-face">
-                      <div class="chibi-eyes">
-                        <span class="chibi-eye blink-eye">●</span>
-                        <span class="chibi-eye blink-eye">●</span>
-                      </div>
-                      <div class="chibi-blush big-blush animate-blush"></div>
-                      <div class="chibi-mouth mouth-shy">ω</div>
-                    </div>
-                    <div class="chibi-hair shy-hair"></div>
-                  </div>
-                  <div class="chibi-torso">
-                    <div class="chibi-dress shy-dress"></div>
-                  </div>
-                  <div class="chibi-legs">
-                    <div class="chibi-leg"></div>
-                    <div class="chibi-leg"></div>
-                  </div>
-                  <div class="hiding-hands"></div>
-                </div>
-                <div class="blush-lines" aria-hidden="true">
-                  <span class="blush-line bl-1">— —</span>
-                  <span class="blush-line bl-2">— —</span>
-                </div>
-              </div>
-              <div class="speech-bubble delay-2">
-                <p>"Sebenarnya... kamu sangat berarti bagiku." 💕</p>
-              </div>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+    function playSound(id) {
+      if (isMuted) return;
+      const sound = document.getElementById(id);
+      if (sound && sound.src && sound.src !== "data:audio/mp3;base64,") {
+        sound.currentTime = 0;
+        sound.play().catch(e => { }); // Silent catch jika dummy audio
+      }
+    }
 
-          <!-- PAGE 9: Foto Polaroid -->
-          <div class="page hidden-page" data-page="9" role="article" aria-label="Halaman 9">
-            <div class="page-corner-sticker sticker-tl" aria-hidden="true">📷</div>
-            <div class="page-number" aria-hidden="true">9</div>
-            <div class="page-content page-9-content">
-              <h2 class="page-heading center-text delay-1">Kenangan Terindah 📸</h2>
-              <div class="polaroid-stack" aria-label="Foto-foto kenangan">
-                <div class="polaroid polaroid-1 fall-in delay-1" aria-label="Foto kenangan 1">
-                  <div class="polaroid-photo photo-1">
-                    <div class="photo-placeholder">
-                      <span class="photo-emoji">🌸</span>
-                      <span class="photo-emoji">☀️</span>
-                    </div>
-                  </div>
-                  <p class="polaroid-caption">Hari yang cerah 🌟</p>
-                </div>
-                <div class="polaroid polaroid-2 fall-in delay-2" aria-label="Foto kenangan 2">
-                  <div class="polaroid-photo photo-2">
-                    <div class="photo-placeholder">
-                      <span class="photo-emoji">🌺</span>
-                      <span class="photo-emoji">🦋</span>
-                    </div>
-                  </div>
-                  <p class="polaroid-caption">Momen manis 💕</p>
-                </div>
-                <div class="polaroid polaroid-3 fall-in delay-3" aria-label="Foto kenangan 3">
-                  <div class="polaroid-photo photo-3">
-                    <div class="photo-placeholder">
-                      <span class="photo-emoji">✨</span>
-                      <span class="photo-emoji">💖</span>
-                    </div>
-                  </div>
-                  <p class="polaroid-caption">Selamanya 💝</p>
-                </div>
-              </div>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+    /* ===== PARTICLE SYSTEM ===== */
+    function createParticles(x, y, emojis) {
+      for (let i = 0; i < 15; i++) {
+        const p = document.createElement('div');
+        p.classList.add('particle');
+        p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        document.body.appendChild(p);
 
-          <!-- PAGE 10: Puzzle Pita Hadiah -->
-          <div class="page hidden-page" data-page="10" role="article" aria-label="Halaman 10">
-            <div class="page-corner-sticker sticker-tr" aria-hidden="true">🎁</div>
-            <div class="page-number" aria-hidden="true">10</div>
-            <div class="page-content page-10-content">
-              <h2 class="page-heading center-text delay-1">Ada hadiah untukmu! 🎁</h2>
-              <p class="page-body center-text delay-2">Geser pita untuk membuka!</p>
-              <div class="gift-scene" aria-label="Hadiah dengan pita">
-                <div id="gift-box" class="gift-box" aria-label="Kotak hadiah">
-                  <div class="gift-lid" id="gift-lid">
-                    <div id="ribbon-h" class="ribbon ribbon-horizontal" aria-label="Geser pita" role="slider" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
-                      <div class="ribbon-slider-track">
-                        <div id="ribbon-knob" class="ribbon-knob" aria-label="Tarik pita">🎀</div>
-                      </div>
-                    </div>
-                    <div class="ribbon ribbon-vertical" aria-hidden="true"></div>
-                  </div>
-                  <div class="gift-body">
-                    <div class="gift-pattern"></div>
-                  </div>
-                </div>
-                <div id="gift-open-content" class="gift-open-content hidden">
-                  <div class="gift-reveal">
-                    <p class="gift-text">💖 Hatiku adalah hadiahnya 💖</p>
-                    <p class="gift-subtext">Dan aku berikan sepenuhnya untukmu.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+        // Random angle and distance
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 150 + 50;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance;
 
-          <!-- PAGE 11: Konfeti -->
-          <div class="page hidden-page" data-page="11" role="article" aria-label="Halaman 11">
-            <div class="page-corner-sticker sticker-tl" aria-hidden="true">🎉</div>
-            <div class="page-number" aria-hidden="true">11</div>
-            <div class="page-content page-11-content">
-              <h2 class="page-heading center-text delay-1">Kita Merayakannya! 🎊</h2>
-              <div class="confetti-page-container" aria-hidden="true" id="page11-confetti"></div>
-              <div class="celebration-emojis" aria-hidden="true">
-                <span class="cel-emoji ce-1">🎉</span>
-                <span class="cel-emoji ce-2">🎊</span>
-                <span class="cel-emoji ce-3">✨</span>
-                <span class="cel-emoji ce-4">🎈</span>
-                <span class="cel-emoji ce-5">💖</span>
-                <span class="cel-emoji ce-6">🎉</span>
-              </div>
-              <p class="page-body center-text delay-2">Setiap momen bersamamu adalah perayaan!</p>
-              <p class="page-body center-text delay-3">Mari kita terus menulis cerita yang indah. 🌟</p>
-              <div class="balloon-row delay-4" aria-hidden="true">
-                <span class="balloon b-1">🎈</span>
-                <span class="balloon b-2">🎀</span>
-                <span class="balloon b-3">🎈</span>
-              </div>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+        p.style.left = `${x}px`;
+        p.style.top = `${y}px`;
+        p.style.setProperty('--tx', `${tx}px`);
+        p.style.setProperty('--ty', `${ty}px`);
 
-          <!-- PAGE 12: Countdown Romantis -->
-          <div class="page hidden-page" data-page="12" role="article" aria-label="Halaman 12">
-            <div class="page-corner-sticker sticker-tr" aria-hidden="true">⏳</div>
-            <div class="page-number" aria-hidden="true">12</div>
-            <div class="page-content page-12-content">
-              <h2 class="page-heading center-text delay-1">Bersiaplah... 💫</h2>
-              <div id="countdown-display" class="countdown-display" aria-live="assertive" aria-label="Hitung mundur romantis">
-                <span id="countdown-number" class="countdown-number">3</span>
-              </div>
-              <div id="countdown-message" class="countdown-message hidden delay-1" aria-live="polite">
-                <p class="countdown-reveal-text">💖 Aku menyayangimu! 💖</p>
-                <div class="countdown-hearts" aria-hidden="true">
-                  <span class="cd-heart cdh-1">💗</span>
-                  <span class="cd-heart cdh-2">💓</span>
-                  <span class="cd-heart cdh-3">💕</span>
-                  <span class="cd-heart cdh-4">💖</span>
-                </div>
-              </div>
-              <p id="countdown-prompt" class="page-body center-text delay-2">Sebuah pesan spesial sedang disiapkan...</p>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+        setTimeout(() => p.remove(), 1000);
+      }
+    }
 
-          <!-- PAGE 13: Layar Penuh Hati -->
-          <div class="page hidden-page" data-page="13" role="article" aria-label="Halaman 13">
-            <div class="page-number" aria-hidden="true">13</div>
-            <div class="page-content page-13-content full-heart-page">
-              <div class="heart-explosion" aria-label="Layar penuh hati" aria-hidden="true">
-                <span class="he-heart heh-1">💖</span>
-                <span class="he-heart heh-2">💗</span>
-                <span class="he-heart heh-3">💕</span>
-                <span class="he-heart heh-4">💓</span>
-                <span class="he-heart heh-5">💝</span>
-                <span class="he-heart heh-6">💖</span>
-                <span class="he-heart heh-7">💗</span>
-                <span class="he-heart heh-8">💕</span>
-                <span class="he-heart heh-9">💓</span>
-                <span class="he-heart heh-10">💝</span>
-                <span class="he-heart heh-11">💖</span>
-                <span class="he-heart heh-12">💗</span>
-              </div>
-              <div class="heart-center-message">
-                <h2 class="page-heading center-text glow-text">Kamu ❤️</h2>
-                <p class="page-body center-text">adalah alasan semua ini ada.</p>
-              </div>
-            </div>
-          </div>
+    /* ===== BACKGROUND PETALS ===== */
+    function generatePetals() {
+      const container = document.getElementById('petals');
+      setInterval(() => {
+        const petal = document.createElement('div');
+        petal.classList.add('petal');
 
-          <!-- PAGE 14: Pesan Utama Cinta -->
-          <div class="page hidden-page" data-page="14" role="article" aria-label="Halaman 14">
-            <div class="page-corner-sticker sticker-tl" aria-hidden="true">💌</div>
-            <div class="page-number" aria-hidden="true">14</div>
-            <div class="page-content page-14-content">
-              <div class="love-letter-main">
-                <div class="letter-header" aria-hidden="true">💖 — 💖</div>
-                <h2 class="page-heading center-text handwriting-anim delay-1">Untuk Kamu yang Tercinta</h2>
-                <div class="love-message-block delay-2">
-                  <p class="love-line ll-1">"Kamu bukan hanya seseorang yang aku kenal,</p>
-                  <p class="love-line ll-2">kamu adalah bagian dari cerita hidupku</p>
-                  <p class="love-line ll-3">yang paling ingin aku ulang berkali-kali.</p>
-                  <p class="love-line ll-4">Bersama kamu, bahkan hari biasa</p>
-                  <p class="love-line ll-5">terasa seperti petualangan yang ajaib.</p>
-                  <p class="love-line ll-6">Aku memilihmu, hari ini, esok,</p>
-                  <p class="love-line ll-7">dan di setiap halaman berikutnya."</p>
-                </div>
-                <div class="love-signature delay-3">
-                  <span>— Dengan sepenuh hati 💕</span>
-                </div>
-                <div class="love-page-deco delay-4" aria-hidden="true">🌸 💖 🌸</div>
-              </div>
-            </div>
-            <div class="page-texture" aria-hidden="true"></div>
-          </div>
+        // Random properties
+        const size = Math.random() * 10 + 10;
+        petal.style.width = `${size}px`;
+        petal.style.height = `${size}px`;
+        petal.style.left = `${Math.random() * 100}%`;
+        petal.style.background = Math.random() > 0.5 ? 'rgba(255, 183, 197, 0.6)' : 'rgba(255, 255, 255, 0.6)';
 
-          <!-- PAGE 15: Ending -->
-          <div class="page hidden-page ending-page" data-page="15" role="article" aria-label="Halaman 15 - Akhir cerita">
-            <div class="page-number" aria-hidden="true">15</div>
-            <div class="page-content page-15-content">
-              <!-- Ending confetti -->
-              <div id="ending-confetti" class="ending-confetti-container" aria-hidden="true"></div>
-              <!-- Ending hearts -->
-              <div id="ending-hearts" class="ending-hearts-container" aria-hidden="true"></div>
+        const duration = Math.random() * 5 + 5;
+        petal.style.animationDuration = `${duration}s`;
 
-              <div class="ending-content">
-                <div class="ending-book-icon" aria-hidden="true">📖</div>
-                <h2 class="page-heading center-text ending-title delay-1">Terima kasih sudah membaca cerita ini.</h2>
-                <p class="page-body center-text ending-body delay-2">Semoga setiap halamannya menghangatkan hatimu. 🌸</p>
-                <div class="ending-final-message delay-3" aria-label="Pesan akhir">
-                  <p class="handwriting-big">Sampai jumpa di cerita berikutnya ❤️</p>
-                </div>
-                <div class="ending-actions delay-4">
-                  <button id="btn-read-again" class="action-btn primary-btn" aria-label="Baca cerita dari awal">
-                    🔄 Baca Lagi
-                  </button>
-                  <button id="btn-share" class="action-btn secondary-btn" aria-label="Bagikan cerita ini">
-                    🔗 Bagikan Cerita
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        container.appendChild(petal);
+        setTimeout(() => petal.remove(), duration * 1000);
+      }, 500);
+    }
 
-        </div><!-- /pages-container -->
+    /* ===== PAGE SPECIFIC INTERACTIONS ===== */
+    function triggerHeartBurst(e) {
+      playSound('sfx-pop');
+      createParticles(e.clientX, e.clientY, ['💖', '💕', '✨']);
+      setTimeout(nextPage, 800);
+    }
 
-        <!-- ===== BACK COVER ===== -->
-        <div class="book-cover back-cover" aria-hidden="true">
-          <div class="back-cover-content">
-            <p class="back-cover-text">A Little Love Story</p>
-            <div class="back-cover-heart">💖</div>
-          </div>
-        </div>
+    function openEnvelope(el) {
+      el.style.display = 'none';
+      el.nextElementSibling.style.display = 'block';
+      playSound('sfx-pop');
+      createParticles(window.innerWidth / 2, window.innerHeight / 2, ['💌', '✨']);
+    }
 
-      </div><!-- /book -->
-    </div><!-- /book-wrapper -->
+    function triggerConfetti(e, el) {
+      el.innerText = '🎉';
+      playSound('sfx-pop');
+      createParticles(e.clientX, e.clientY, ['🎉', '✨', '🎁', '🎈']);
+      setTimeout(nextPage, 1000);
+    }
 
-    <!-- Navigation hit zones (invisible tap areas) -->
-    <div
-      id="nav-prev"
-      class="nav-zone nav-prev-zone"
-      role="button"
-      tabindex="0"
-      aria-label="Halaman sebelumnya"
-    ></div>
-    <div
-      id="nav-next"
-      class="nav-zone nav-next-zone"
-      role="button"
-      tabindex="0"
-      aria-label="Halaman berikutnya"
-    ></div>
+    function startCountdown() {
+      const display = document.getElementById('countdown');
+      let count = 3;
+      display.innerText = count;
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          display.innerText = count;
+          display.style.animation = 'none';
+          display.offsetHeight; // trigger reflow
+          display.style.animation = 'beat 0.5s ease';
+          playSound('sfx-pop');
+        } else {
+          clearInterval(interval);
+          nextPage();
+        }
+      }, 1000);
+    }
 
-  </div><!-- /app -->
+    /* ===== ENDING CINEMATIC ===== */
+    function triggerCinematicEnding() {
+      // Close the book completely (scale down)
+      book.style.transform = 'scale(0.8) translateY(20px)';
+      uiControls.classList.remove('active');
+      pageIndicator.classList.remove('active');
 
-  <!-- ===== AUDIO ELEMENTS ===== -->
-  <!-- Note: Audio files must be placed in ./assets/audio/ -->
-  <audio id="audio-bgm"        src="./assets/audio/bgm.mp3"        loop   preload="none"></audio>
-  <audio id="audio-book-open"  src="./assets/audio/book-open.mp3"  preload="none"></audio>
-  <audio id="audio-page-flip"  src="./assets/audio/page-flip.mp3"  preload="none"></audio>
-  <audio id="audio-pop"        src="./assets/audio/pop.mp3"        preload="none"></audio>
-  <audio id="audio-sparkle"    src="./assets/audio/sparkle.mp3"    preload="none"></audio>
+      setTimeout(() => {
+        document.getElementById('outro').classList.add('active');
+        createParticles(window.innerWidth / 2, window.innerHeight / 2, ['💖', '🎉', '✨', '🌸']);
+      }, 1000);
+    }
 
-  <!-- Main Script -->
-  <script src="script.js"></script>
+    function shareStory() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'A Little Love Story',
+          text: 'Baca cerita lucu ini deh!',
+          url: window.location.href,
+        });
+      } else {
+        alert("Link telah dicopy! (Simulasi)");
+      }
+    }
+  </script>
 </body>
+
 </html>

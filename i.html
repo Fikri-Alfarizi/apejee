@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>A Little Love Story</title>
+    <meta name="theme-color" content="#FFD6E7">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Nunito:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <style>
+        /* ===== VARIABLES & BASE ===== */
+        :root {
+            --pink-muda: #FFD6E7;
+            --peach: #FFE3D8;
+            --cream: #FFF8E8;
+            --lavender: #E9D8FF;
+            --baby-blue: #D8EEFF;
+            --white: #FFFFFF;
+            --text-main: #5B4B5A;
+            --text-sec: #8A7485;
+            --safe-top: env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: linear-gradient(180deg, var(--cream) 0%, var(--pink-muda) 100%);
+            font-family: 'Nunito', sans-serif;
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1,
+        h2,
+        .script-font {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* ===== BACKGROUND PETALS ===== */
+        .petals-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .petal {
+            position: absolute;
+            top: -10%;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50% 0 50% 50%;
+            animation: fall linear infinite;
+        }
+
+        /* ===== UI ELEMENTS ===== */
+        .ui-controls {
+            position: absolute;
+            top: max(20px, var(--safe-top));
+            right: 20px;
+            z-index: 100;
+            display: flex;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        .ui-controls.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            border: 2px solid var(--white);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+
+        .page-indicator {
+            position: absolute;
+            bottom: max(20px, var(--safe-bottom));
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.7);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+
+        /* ===== OPENING SCENE ===== */
+        .opening-scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(43, 45, 66, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            color: var(--white);
+            transition: opacity 1s, visibility 1s;
+        }
+
+        .opening-scene h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .opening-scene p {
+            font-size: 18px;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+        }
+
+        .book-icon {
+            font-size: 60px;
+            margin-bottom: 30px;
+            animation: dropBounce 1.5s cubic-bezier(0.28, 0.84, 0.42, 1) forwards;
+            transform: translateY(-200px);
+            opacity: 0;
+        }
+
+        /* ===== BOOK COMPONENTS & 3D ===== */
+        .scene {
+            width: 100%;
+            max-width: 390px;
+            /* iPhone size preview for desktop */
+            height: 100%;
+            max-height: 844px;
+            perspective: 2500px;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .book {
+            width: 90%;
+            height: 85%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1);
+            border-radius: 10px 20px 20px 10px;
+            box-shadow: 10px 15px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .book.closed {
+            transform: rotateY(0deg) scale(0.95);
+        }
+
+        .book.open {
+            transform: translateX(0) scale(1);
+        }
+
+        .page {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: var(--white);
+            border-radius: 10px 20px 20px 10px;
+            transform-origin: left center;
+            transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1), opacity 0.3s;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            text-align: center;
+            box-shadow: inset 5px 0 10px rgba(0, 0, 0, 0.05);
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.03"><rect width="100" height="100" fill="none"/><circle cx="50" cy="50" r="2" fill="%235B4B5A"/></svg>');
+            /* Tekstur kertas halus */
+            will-change: transform;
+        }
+
+        /* Cover styling */
+        .cover {
+            background: linear-gradient(135deg, var(--lavender), var(--pink-muda));
+            border-left: 15px solid rgba(0, 0, 0, 0.1);
+            /* Spine */
+            color: var(--text-main);
+            border-radius: 15px 25px 25px 15px;
+        }
+
+        .cover h1 {
+            font-size: 50px;
+            color: var(--white);
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .page.flipped {
+            transform: rotateY(-180deg);
+            pointer-events: none;
+        }
+
+        /* Z-Index logic untuk 15 Halaman + Cover */
+        .page:nth-child(1) {
+            z-index: 17;
+        }
+
+        /* Cover */
+        .page:nth-child(2) {
+            z-index: 16;
+        }
+
+        /* Hal 1 */
+        .page:nth-child(3) {
+            z-index: 15;
+        }
+
+        .page:nth-child(4) {
+            z-index: 14;
+        }
+
+        .page:nth-child(5) {
+            z-index: 13;
+        }
+
+        .page:nth-child(6) {
+            z-index: 12;
+        }
+
+        .page:nth-child(7) {
+            z-index: 11;
+        }
+
+        .page:nth-child(8) {
+            z-index: 10;
+        }
+
+        .page:nth-child(9) {
+            z-index: 9;
+        }
+
+        .page:nth-child(10) {
+            z-index: 8;
+        }
+
+        .page:nth-child(11) {
+            z-index: 7;
+        }
+
+        .page:nth-child(12) {
+            z-index: 6;
+        }
+
+        .page:nth-child(13) {
+            z-index: 5;
+        }
+
+        .page:nth-child(14) {
+            z-index: 4;
+        }
+
+        .page:nth-child(15) {
+            z-index: 3;
+        }
+
+        .page:nth-child(16) {
+            z-index: 2;
+        }
+
+        /* Hal 15 */
+        .page:nth-child(17) {
+            z-index: 1;
+        }
+
+        /* Back Cover */
+
+        /* ===== SPECIFIC PAGE STYLES ===== */
+        .typewriter {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid var(--text-main);
+            animation: typing 2s steps(40, end), blink-caret .75s step-end infinite;
+        }
+
+        .emoji-large {
+            font-size: 80px;
+        }
+
+        .night-sky {
+            background: linear-gradient(180deg, #1A1A2E 0%, #16213E 100%);
+            color: var(--white);
+        }
+
+        .interactive-btn {
+            background: var(--peach);
+            border: none;
+            padding: 15px 30px;
+            font-family: 'Nunito';
+            font-weight: 700;
+            font-size: 18px;
+            color: var(--text-main);
+            border-radius: 30px;
+            margin-top: 20px;
+            box-shadow: 0 5px 15px rgba(255, 163, 163, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .interactive-btn:active {
+            transform: scale(0.95);
+        }
+
+        .polaroid {
+            background: var(--white);
+            padding: 10px 10px 40px 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+            transform: rotate(-5deg);
+            animation: dropDown 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+        }
+
+        .polaroid img {
+            width: 200px;
+            height: 200px;
+            background: #eee;
+            object-fit: cover;
+        }
+
+        .envelope-container {
+            cursor: pointer;
+            animation: float 3s infinite ease-in-out;
+        }
+
+        .heart-bg {
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30"><text y="20" font-size="20">💖</text></svg>');
+            animation: slideBg 10s linear infinite;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes dropBounce {
+            0% {
+                transform: translateY(-200px);
+                opacity: 0;
+            }
+
+            60% {
+                transform: translateY(20px);
+                opacity: 1;
+            }
+
+            80% {
+                transform: translateY(-10px);
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 0.8;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        @keyframes beat {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.2);
+            }
+
+            50% {
+                transform: scale(1);
+            }
+
+            75% {
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes wiggle {
+
+            0%,
+            100% {
+                transform: rotate(-5deg);
+            }
+
+            50% {
+                transform: rotate(5deg);
+            }
+        }
+
+        @keyframes twinkle {
+
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(110vh) rotate(360deg);
+            }
+        }
+
+        @keyframes typing {
+            from {
+                width: 0
+            }
+
+            to {
+                width: 100%
+            }
+        }
+
+        @keyframes blink-caret {
+
+            from,
+            to {
+                border-color: transparent
+            }
+
+            50% {
+                border-color: var(--text-main);
+            }
+        }
+
+        @keyframes dropDown {
+            from {
+                transform: translateY(-100vh) rotate(-20deg);
+            }
+
+            to {
+                transform: translateY(0) rotate(-5deg);
+            }
+        }
+
+        @keyframes popOut {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(2);
+                opacity: 0;
+            }
+        }
+
+        @keyframes slideBg {
+            from {
+                background-position: 0 0;
+            }
+
+            to {
+                background-position: 100px 100px;
+            }
+        }
+
+        /* ===== PARTICLE SYSTEM ===== */
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 999;
+            font-size: 24px;
+            animation: particleFloat 1s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0.5);
+                opacity: 0;
+            }
+        }
+
+        /* ===== ENDING CINEMATIC ===== */
+        .ending-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 1s;
+        }
+
+        .ending-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .ending-overlay h2 {
+            font-size: 40px;
+            color: #ff477e;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ===== AUDIO ELEMENTS ===== -->
+    <!-- Catatan: Ganti src dengan file mp3 Anda yang diupload di folder assets/audio/ jika digunakan secara lokal/repo -->
+    <audio id="bgm" loop>
+        <source src="data:audio/mp3;base64," type="audio/mpeg">
+    </audio>
+    <audio id="sfx-open">
+        <source src="data:audio/mp3;base64," type="audio/mpeg">
+    </audio>
+    <audio id="sfx-flip">
+        <source src="data:audio/mp3;base64," type="audio/mpeg">
+    </audio>
+    <audio id="sfx-pop">
+        <source src="data:audio/mp3;base64," type="audio/mpeg">
+    </audio>
+
+    <!-- ===== BACKGROUND EFFECT ===== -->
+    <div class="petals-container" id="petals"></div>
+
+    <!-- ===== UI CONTROLS ===== -->
+    <div class="ui-controls" id="ui-controls">
+        <button class="icon-btn" id="mute-btn" aria-label="Mute Audio">🎵</button>
+    </div>
+    <div class="page-indicator" id="page-indicator">Cover</div>
+
+    <!-- ===== OPENING SCENE ===== -->
+    <div class="opening-scene" id="opening" onclick="startStory()">
+        <div class="book-icon">📖</div>
+        <h1 class="script-font">A Little Love Story</h1>
+        <p>✨ Tap di mana saja untuk membuka ✨</p>
+    </div>
+
+    <!-- ===== 3D SCENE & BOOK ===== -->
+    <div class="scene">
+        <div class="book closed" id="book">
+
+            <!-- Cover -->
+            <div class="page cover" id="page-0">
+                <div style="font-size: 60px; animation: float 3s infinite;">🌸</div>
+                <h1>Our Story</h1>
+                <p style="margin-top:20px; font-weight:bold;">Tap sebelah kanan buku untuk membuka</p>
+                <!-- Stiker kecil sudut -->
+                <div style="position:absolute; bottom:10px; right:10px; font-size:24px;">✨</div>
+            </div>
+
+            <!-- Halaman 1 -->
+            <div class="page" id="page-1">
+                <h2 class="script-font typewriter" style="font-size: 40px;">Hai...</h2>
+                <p style="margin-top: 20px;">Iya, ini buat kamu.</p>
+            </div>
+
+            <!-- Halaman 2 -->
+            <div class="page" id="page-2">
+                <div class="emoji-large" style="animation: wiggle 2s infinite;">👧🏻</div>
+                <div style="font-size: 40px; position:absolute; top:20%; left:10%; animation: float 4s infinite;">☁️
+                </div>
+                <div style="font-size: 40px; position:absolute; top:30%; right:10%; animation: float 3s infinite;">☁️
+                </div>
+                <h2 class="script-font" style="margin-top: 20px; font-size: 32px;">Kamu tau gak?</h2>
+            </div>
+
+            <!-- Halaman 3 -->
+            <div class="page" id="page-3">
+                <div class="emoji-large" style="animation: float 2s infinite;">💭</div>
+                <h2 class="script-font" style="margin-top: 20px; font-size: 30px;">Tiap kali mikirin kamu...</h2>
+            </div>
+
+            <!-- Halaman 4 (Plot twist) -->
+            <div class="page" id="page-4">
+                <div class="emoji-large" style="animation: beat 1s infinite;">😳</div>
+                <h2 class="script-font" style="margin-top: 20px; font-size: 32px;">Sebenarnya aku gugup banget</h2>
+                <p>Mau ngomong ini dari lama...</p>
+            </div>
+
+            <!-- Halaman 5 (Mini interaction) -->
+            <div class="page" id="page-5">
+                <h2 class="script-font" style="font-size: 28px; margin-bottom:30px;">Coba tap hatinya deh!</h2>
+                <div class="emoji-large" style="animation: beat 1.5s infinite; cursor: pointer; padding: 20px;"
+                    onclick="triggerHeartBurst(event)">💖</div>
+            </div>
+
+            <!-- Halaman 6 (Amplop) -->
+            <div class="page" id="page-6">
+                <div class="envelope-container" onclick="openEnvelope(this)">
+                    <div style="font-size: 100px;">💌</div>
+                    <p style="margin-top: 10px; font-weight: bold;">Tap amplopnya</p>
+                </div>
+                <div class="letter"
+                    style="display:none; background:#fff; border: 1px solid #ccc; padding:20px; border-radius:10px; box-shadow: 0 5px 10px rgba(0,0,0,0.1);">
+                    <p class="script-font" style="font-size: 24px;">"Kamu itu hal terbaik yang pernah terjadi."</p>
+                </div>
+            </div>
+
+            <!-- Halaman 7 (Malam) -->
+            <div class="page night-sky" id="page-7">
+                <div style="font-size: 80px; animation: float 4s infinite;">🌙</div>
+                <div style="position:absolute; top:20px; left:30px; font-size:20px; animation: twinkle 1s infinite;">✨
+                </div>
+                <div style="position:absolute; top:60px; right:40px; font-size:15px; animation: twinkle 1.5s infinite;">
+                    ✨</div>
+                <h2 class="script-font" style="margin-top: 30px; font-size: 35px;">Bahkan di malam hari...</h2>
+            </div>
+
+            <!-- Halaman 8 -->
+            <div class="page" id="page-8">
+                <div class="emoji-large" style="animation: wiggle 2s infinite;">🙈</div>
+                <h2 class="script-font" style="margin-top: 20px; font-size: 30px;">Kamu yang selalu bikin senyum-senyum
+                    sendiri</h2>
+            </div>
+
+            <!-- Halaman 9 (Polaroid) -->
+            <div class="page" id="page-9">
+                <div class="polaroid">
+                    <div
+                        style="width: 200px; height: 200px; background: var(--peach); display:flex; justify-content:center; align-items:center; font-size: 80px;">
+                        🌸</div>
+                    <p class="script-font" style="margin-top: 15px; font-size: 24px;">Our memories...</p>
+                </div>
+            </div>
+
+            <!-- Halaman 10 (Puzzle) -->
+            <div class="page" id="page-10">
+                <h2 class="script-font" style="font-size: 28px; margin-bottom:20px;">Aku punya hadiah! Tap kotaknya</h2>
+                <div style="font-size: 100px; cursor: pointer; animation: float 2s infinite;"
+                    onclick="triggerConfetti(event, this)">🎁</div>
+            </div>
+
+            <!-- Halaman 11 (Konfeti hasil klik hadiah) -->
+            <div class="page" id="page-11">
+                <div class="emoji-large" style="animation: bounce 1s infinite;">🎉</div>
+                <h2 class="script-font" style="margin-top: 20px; font-size: 35px;">Kejutan!!</h2>
+            </div>
+
+            <!-- Halaman 12 (Countdown) -->
+            <div class="page" id="page-12">
+                <h2 class="script-font" style="font-size: 30px;">Jadi, intinya adalah...</h2>
+                <div id="countdown" style="font-size: 60px; font-weight: 800; margin-top:20px; color:#ff477e;">3</div>
+            </div>
+
+            <!-- Halaman 13 (Layar Hati) -->
+            <div class="page heart-bg" id="page-13">
+                <div style="background: rgba(255,255,255,0.8); padding: 30px; border-radius: 20px;">
+                    <h2 class="script-font" style="font-size: 40px; color:#ff477e;">Aku Sayang Kamu!</h2>
+                </div>
+            </div>
+
+            <!-- Halaman 14 -->
+            <div class="page" id="page-14">
+                <div class="emoji-large" style="animation: beat 1s infinite;">👩‍❤️‍👨</div>
+                <h2 class="script-font" style="margin-top: 20px; font-size: 30px;">Semoga kita bisa bikin lebih banyak
+                    cerita bareng ya!</h2>
+            </div>
+
+            <!-- Halaman 15 (Ending) -->
+            <div class="page" id="page-15">
+                <h2 class="script-font" style="font-size: 35px;">Terima kasih sudah membaca cerita ini.</h2>
+                <p style="margin-top:20px;">Tutup bukunya ya...</p>
+            </div>
+
+            <!-- Back Cover -->
+            <div class="page cover" id="page-16">
+                <h1 style="font-size:40px;">The End</h1>
+                <p style="color:var(--white); margin-top:10px;">Made with ❤️</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== ENDING OVERLAY ===== -->
+    <div class="ending-overlay" id="outro">
+        <h2 class="script-font">Sampai jumpa di cerita berikutnya ❤️</h2>
+        <button class="interactive-btn" onclick="location.reload()">Baca Lagi 📖</button>
+        <button class="interactive-btn" style="background: var(--baby-blue); margin-top: 15px;"
+            onclick="shareStory()">Bagikan Cerita ✨</button>
+    </div>
+
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        /* ===== SETUP & VARIABLES ===== */
+        const book = document.getElementById('book');
+        const pages = document.querySelectorAll('.page');
+        const totalPages = pages.length;
+        let currentPage = 0; // 0 is cover
+
+        const uiControls = document.getElementById('ui-controls');
+        const pageIndicator = document.getElementById('page-indicator');
+        const muteBtn = document.getElementById('mute-btn');
+        const bgm = document.getElementById('bgm');
+
+        let isMuted = false;
+        let audioInitialized = false;
+
+        /* ===== BOOK OPENING ===== */
+        function startStory() {
+            document.getElementById('opening').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('opening').style.visibility = 'hidden';
+                book.classList.remove('closed');
+                book.classList.add('open');
+                uiControls.classList.add('active');
+                pageIndicator.classList.add('active');
+
+                // Initialize Audio context (Requires user gesture)
+                if (!audioInitialized) {
+                    bgm.volume = 0.25;
+                    bgm.play().catch(e => console.log("Audio play prevented by browser"));
+                    audioInitialized = true;
+                }
+
+                generatePetals();
+                createParticles(window.innerWidth / 2, window.innerHeight / 2, ['✨', '💖']);
+                playSound('sfx-open');
+            }, 500);
+        }
+
+        /* ===== PAGE FLIP LOGIC ===== */
+        function updatePageVisibility() {
+            if (currentPage === 0) {
+                pageIndicator.innerText = "Cover";
+            } else if (currentPage === totalPages - 1) {
+                pageIndicator.innerText = "Back Cover";
+            } else {
+                pageIndicator.innerText = `${currentPage} / 15`;
+            }
+
+            // Animasi Khusus Halaman
+            if (currentPage === 12) startCountdown();
+            if (currentPage === totalPages - 1) setTimeout(triggerCinematicEnding, 1500);
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages - 1) {
+                pages[currentPage].classList.add('flipped');
+                currentPage++;
+                playSound('sfx-flip');
+                updatePageVisibility();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                pages[currentPage].classList.remove('flipped');
+                playSound('sfx-flip');
+                updatePageVisibility();
+            }
+        }
+
+        /* ===== TOUCH & GESTURES (SWIPE/TAP) ===== */
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const threshold = 50;
+
+        document.addEventListener('touchstart', e => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        document.addEventListener('touchend', e => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleGesture();
+        }, { passive: true });
+
+        function handleGesture() {
+            if (touchEndX < touchStartX - threshold) {
+                // Swipe Left -> Next
+                nextPage();
+            }
+            if (touchEndX > touchStartX + threshold) {
+                // Swipe Right -> Prev
+                prevPage();
+            }
+        }
+
+        // Tap on screen edges
+        document.addEventListener('click', (e) => {
+            // Ignore if clicking buttons/interactive elements
+            if (e.target.closest('button') || e.target.closest('.opening-scene') || e.target.closest('.interactive-btn') || e.target.closest('.envelope-container') || e.target.hasAttribute('onclick')) return;
+
+            const screenWidth = window.innerWidth;
+            if (e.clientX > screenWidth / 2 + 50) {
+                nextPage();
+            } else if (e.clientX < screenWidth / 2 - 50) {
+                prevPage();
+            }
+        });
+
+        /* ===== AUDIO CONTROL ===== */
+        muteBtn.addEventListener('click', () => {
+            isMuted = !isMuted;
+            bgm.muted = isMuted;
+            muteBtn.innerText = isMuted ? '🔇' : '🎵';
+        });
+
+        function playSound(id) {
+            if (isMuted) return;
+            const sound = document.getElementById(id);
+            if (sound && sound.src && sound.src !== "data:audio/mp3;base64,") {
+                sound.currentTime = 0;
+                sound.play().catch(e => { }); // Silent catch jika dummy audio
+            }
+        }
+
+        /* ===== PARTICLE SYSTEM ===== */
+        function createParticles(x, y, emojis) {
+            for (let i = 0; i < 15; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                p.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+                document.body.appendChild(p);
+
+                // Random angle and distance
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 150 + 50;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+
+                p.style.left = `${x}px`;
+                p.style.top = `${y}px`;
+                p.style.setProperty('--tx', `${tx}px`);
+                p.style.setProperty('--ty', `${ty}px`);
+
+                setTimeout(() => p.remove(), 1000);
+            }
+        }
+
+        /* ===== BACKGROUND PETALS ===== */
+        function generatePetals() {
+            const container = document.getElementById('petals');
+            setInterval(() => {
+                const petal = document.createElement('div');
+                petal.classList.add('petal');
+
+                // Random properties
+                const size = Math.random() * 10 + 10;
+                petal.style.width = `${size}px`;
+                petal.style.height = `${size}px`;
+                petal.style.left = `${Math.random() * 100}%`;
+                petal.style.background = Math.random() > 0.5 ? 'rgba(255, 183, 197, 0.6)' : 'rgba(255, 255, 255, 0.6)';
+
+                const duration = Math.random() * 5 + 5;
+                petal.style.animationDuration = `${duration}s`;
+
+                container.appendChild(petal);
+                setTimeout(() => petal.remove(), duration * 1000);
+            }, 500);
+        }
+
+        /* ===== PAGE SPECIFIC INTERACTIONS ===== */
+        function triggerHeartBurst(e) {
+            playSound('sfx-pop');
+            createParticles(e.clientX, e.clientY, ['💖', '💕', '✨']);
+            setTimeout(nextPage, 800);
+        }
+
+        function openEnvelope(el) {
+            el.style.display = 'none';
+            el.nextElementSibling.style.display = 'block';
+            playSound('sfx-pop');
+            createParticles(window.innerWidth / 2, window.innerHeight / 2, ['💌', '✨']);
+        }
+
+        function triggerConfetti(e, el) {
+            el.innerText = '🎉';
+            playSound('sfx-pop');
+            createParticles(e.clientX, e.clientY, ['🎉', '✨', '🎁', '🎈']);
+            setTimeout(nextPage, 1000);
+        }
+
+        function startCountdown() {
+            const display = document.getElementById('countdown');
+            let count = 3;
+            display.innerText = count;
+            const interval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    display.innerText = count;
+                    display.style.animation = 'none';
+                    display.offsetHeight; // trigger reflow
+                    display.style.animation = 'beat 0.5s ease';
+                    playSound('sfx-pop');
+                } else {
+                    clearInterval(interval);
+                    nextPage();
+                }
+            }, 1000);
+        }
+
+        /* ===== ENDING CINEMATIC ===== */
+        function triggerCinematicEnding() {
+            // Close the book completely (scale down)
+            book.style.transform = 'scale(0.8) translateY(20px)';
+            uiControls.classList.remove('active');
+            pageIndicator.classList.remove('active');
+
+            setTimeout(() => {
+                document.getElementById('outro').classList.add('active');
+                createParticles(window.innerWidth / 2, window.innerHeight / 2, ['💖', '🎉', '✨', '🌸']);
+            }, 1000);
+        }
+
+        function shareStory() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'A Little Love Story',
+                    text: 'Baca cerita lucu ini deh!',
+                    url: window.location.href,
+                });
+            } else {
+                alert("Link telah dicopy! (Simulasi)");
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -424,6 +424,11 @@ button {
               box-shadow var(--flip-duration) var(--flip-ease);
 }
 
+.front-cover {
+  z-index: 100;
+}
+
+
 .book-cover.is-open {
   transform: rotateY(-180deg);
   pointer-events: none;
